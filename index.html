@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a1a18" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#faf9f6" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Daily Brief">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>The Daily Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #faf9f6;
+    --surface: #f2f0eb;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6b67;
+    --text-muted: #9a9993;
+    --border: rgba(26,24,24,0.12);
+    --border-strong: rgba(26,24,24,0.25);
+    --accent-blue: #185fa5;
+    --accent-danger: #a32d2d;
+    --accent-warning: #854f0b;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --surface: #222220;
+      --text-primary: #e8e7e0;
+      --text-secondary: #9a9993;
+      --text-muted: #6b6b67;
+      --border: rgba(232,231,224,0.1);
+      --border-strong: rgba(232,231,224,0.22);
+      --accent-blue: #85b7eb;
+      --accent-danger: #f09595;
+      --accent-warning: #fac775;
+    }
+  }
+
+  html { height: 100%; }
+  body {
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Source Serif 4', Georgia, serif;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── Key screen ── */
+  #key-screen {
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.25rem;
+  }
+
+  .key-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    max-width: 420px;
+    width: 100%;
+  }
+
+  .key-card h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+
+  .key-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+  }
+
+  .key-card a { color: var(--accent-blue); text-decoration: underline; }
+
+  .key-card input {
+    width: 100%;
+    background: var(--bg);
+    border: 0.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 15px;
+    color: var(--text-primary);
+    padding: 12px 14px;
+    margin-bottom: 0.75rem;
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  .key-card input:focus { border-color: var(--accent-blue); }
+  .key-note { font-size: 11px; color: var(--text-muted); font-style: italic; margin-top: 0.85rem; line-height: 1.55; }
+
+  /* ── App shell ── */
+  #app { display: none; max-width: 860px; margin: 0 auto; padding: 1.5rem 1.25rem calc(2rem + var(--safe-bottom)); }
+
+  .masthead {
+    border-top: 3px solid var(--text-primary);
+    border-bottom: 1px solid var(--border-strong);
+    padding: 0.7rem 0 0.6rem;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .masthead-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  .masthead-date { font-size: 12px; color: var(--text-secondary); font-style: italic; font-weight: 300; }
+
+  .sources-note {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 1.1rem;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  /* ── Region bar ── */
+  .region-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 1.1rem;
+  }
+
+  .region-btn {
+    background: transparent;
+    border: 0.5px solid var(--border-strong);
+    border-radius: 20px;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-appearance: none;
+    min-height: 34px;
+  }
+
+  .region-btn:hover, .region-btn:active { background: var(--surface); color: var(--text-primary); }
+  .region-btn.active { background: var(--text-primary); color: var(--bg); border-color: var(--text-primary); }
+
+  /* ── Fetch button ── */
+  .fetch-btn {
+    width: 100%;
+    background: var(--text-primary);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 16px;
+    font-weight: 400;
+    padding: 14px 20px;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    transition: opacity 0.15s;
+    min-height: 48px;
+  }
+
+  .fetch-btn:active { opacity: 0.75; }
+  .fetch-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .primary-btn {
+    width: 100%;
+    background: var(--text-primary);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 16px;
+    font-weight: 400;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    min-height: 48px;
+  }
+
+  .primary-btn:active { opacity: 0.75; }
+
+  /* ── States ── */
+  .loading { display: none; text-align: center; padding: 3rem 0; color: var(--text-secondary); font-style: italic; font-size: 15px; font-weight: 300; }
+  .loading.visible { display: block; }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 1.5px solid var(--border-strong); border-top-color: var(--text-primary); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg { display: none; background: rgba(163,45,45,0.08); border: 0.5px solid var(--accent-danger); border-radius: var(--radius); padding: 1rem; font-size: 13px; color: var(--accent-danger); font-style: italic; margin-bottom: 1rem; line-height: 1.55; }
+  .error-msg.visible { display: block; }
+
+  /* ── Stories ── */
+  .stories-wrap { display: none; }
+  .stories-wrap.visible { display: block; }
+
+  .brief-summary {
+    font-size: 15px;
+    line-height: 1.78;
+    color: var(--text-primary);
+    font-weight: 300;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 0.5px solid var(--border-strong);
+  }
+
+  .section-label { font-size: 11px; letter-spacing: 1.3px; text-transform: uppercase; color: var(--text-muted); font-weight: 400; margin-bottom: 0.75rem; }
+
+  .india-section { margin-bottom: 2rem; }
+  .india-header { display: flex; align-items: center; gap: 12px; margin-bottom: 0.85rem; }
+  .india-label { font-size: 11px; letter-spacing: 1.3px; text-transform: uppercase; font-weight: 400; color: var(--accent-blue); white-space: nowrap; }
+  .india-rule { flex: 1; height: 0.5px; background: var(--border-strong); }
+
+  .story-card { border-top: 0.5px solid var(--border); padding: 1.1rem 0; }
+  .story-card:last-child { border-bottom: 0.5px solid var(--border); }
+  .india-card { border-top-color: transparent !important; border-bottom-color: transparent !important; border-left: 2px solid var(--accent-blue); padding-left: 16px; margin-left: -16px; margin-bottom: 0.25rem; }
+
+  .story-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 0.45rem; }
+  .story-num { font-family: 'Playfair Display', Georgia, serif; font-size: 20px; color: var(--text-muted); line-height: 1; min-width: 26px; font-weight: 700; flex-shrink: 0; padding-top: 3px; opacity: 0.4; }
+
+  .story-headline { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+  .story-headline a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--border-strong); }
+  .story-headline a:active { opacity: 0.7; }
+
+  .story-meta { display: flex; gap: 10px; margin-left: 38px; margin-bottom: 0.55rem; flex-wrap: wrap; align-items: center; }
+  .india-meta { margin-left: 0; }
+  .story-region { font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--accent-blue); font-weight: 400; }
+  .story-urgency { font-size: 12px; }
+  .urgency-breaking { color: var(--accent-danger); }
+  .urgency-developing { color: var(--accent-warning); }
+  .urgency-watch { color: var(--accent-blue); }
+  .urgency-context { color: var(--text-muted); }
+  .story-source { font-size: 12px; color: var(--text-muted); font-style: italic; }
+  .story-source a { color: var(--accent-blue); text-decoration: none; }
+
+  .story-body { margin-left: 38px; font-size: 15px; line-height: 1.72; color: var(--text-primary); font-weight: 300; }
+  .india-body { margin-left: 0; }
+  .story-impact { margin-left: 38px; margin-top: 0.6rem; font-size: 13px; font-style: italic; color: var(--text-secondary); font-weight: 300; border-left: 2px solid var(--border-strong); padding-left: 10px; line-height: 1.55; }
+  .india-impact { margin-left: 0; }
+
+  .footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 0.5px solid var(--border); display: flex; justify-content: flex-end; }
+  .reset-key-btn { background: transparent; border: none; font-family: 'Source Serif 4', Georgia, serif; font-size: 12px; color: var(--text-muted); cursor: pointer; font-style: italic; padding: 4px 0; min-height: 32px; }
+  .reset-key-btn:active { color: var(--text-secondary); }
+
+  @media (max-width: 480px) {
+    .masthead-title { font-size: 20px; }
+    .story-headline { font-size: 17px; }
+    .story-body { font-size: 14px; margin-left: 28px; }
+    .story-meta { margin-left: 28px; }
+    .story-impact { margin-left: 28px; }
+    .story-num { font-size: 17px; min-width: 22px; }
+    .brief-summary { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="key-screen">
+  <div class="key-card">
+    <h1>The Daily Brief</h1>
+    <p>Enter your <a href="https://console.anthropic.com/settings/keys" target="_blank">Anthropic API key</a> to get started. Your key is stored only on this device and never sent anywhere except Anthropic's API directly.</p>
+    <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" inputmode="text" />
+    <button class="primary-btn" id="save-key-btn">Save &amp; open briefing</button>
+    <p class="key-note">No key yet? Sign up at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Each briefing costs roughly $0.01–0.03.</p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="masthead">
+    <span class="masthead-title">The Daily Brief</span>
+    <span class="masthead-date" id="today-date"></span>
+  </div>
+
+  <p class="sources-note">
+    General: NYT · WaPo · Foreign Policy · Foreign Affairs · The Economist · Al Jazeera · BBC · Reuters · AP · Guardian · DW · France 24<br>
+    Official: State Dept · White House · Pentagon · UN · foreign govt press offices<br>
+    India desk: Times of India · The Hindu · Siasat Daily
+  </p>
+
+  <div class="region-bar" id="region-bar">
+    <button class="region-btn active" data-region="Global">Global</button>
+    <button class="region-btn" data-region="Middle East">Middle East</button>
+    <button class="region-btn" data-region="Europe & Russia">Europe</button>
+    <button class="region-btn" data-region="Asia-Pacific">Asia-Pacific</button>
+    <button class="region-btn" data-region="Latin America">Latin America</button>
+    <button class="region-btn" data-region="Africa">Africa</button>
+  </div>
+
+  <button class="fetch-btn" id="fetch-btn">Fetch today's briefing ↗</button>
+
+  <div class="loading" id="loading"><span class="spinner"></span>Scanning the wires...</div>
+  <div class="error-msg" id="error-msg"></div>
+
+  <div class="stories-wrap" id="stories-wrap">
+    <div class="brief-summary" id="brief-summary"></div>
+
+    <div class="india-section" id="india-section" style="display:none;">
+      <div class="india-header">
+        <span class="india-label">U.S.–India spotlight</span>
+        <div class="india-rule"></div>
+      </div>
+      <div id="india-list"></div>
+    </div>
+
+    <p class="section-label" id="stories-label">Top stories</p>
+    <div id="stories-list"></div>
+  </div>
+
+  <div class="footer">
+    <button class="reset-key-btn" id="reset-key-btn">Change API key</button>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'daily_brief_api_key';
+  const today = new Date();
+
+  document.getElementById('today-date').textContent = today.toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+  });
+
+  function getKey() { return localStorage.getItem(STORAGE_KEY) || ''; }
+  function saveKey(k) { localStorage.setItem(STORAGE_KEY, k); }
+  function clearKey() { localStorage.removeItem(STORAGE_KEY); }
+
+  function showApp() {
+    document.getElementById('key-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  }
+  function showKeyScreen() {
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('key-screen').style.display = 'flex';
+    document.getElementById('api-key-input').value = '';
+  }
+
+  if (getKey()) showApp();
+
+  document.getElementById('save-key-btn').addEventListener('click', () => {
+    const k = document.getElementById('api-key-input').value.trim();
+    if (!k.startsWith('sk-ant-')) {
+      alert("That doesn't look like a valid Anthropic API key — it should start with sk-ant-");
+      return;
+    }
+    saveKey(k);
+    showApp();
+  });
+  document.getElementById('api-key-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('save-key-btn').click();
+  });
+  document.getElementById('reset-key-btn').addEventListener('click', () => { clearKey(); showKeyScreen(); });
+
+  // Region buttons — click sets selection and re-fetches immediately
+  let selectedRegion = 'Global';
+  document.getElementById('region-bar').addEventListener('click', e => {
+    const btn = e.target.closest('.region-btn');
+    if (!btn || btn.dataset.region === selectedRegion) return;
+    document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedRegion = btn.dataset.region;
+    fetchBriefing();
+  });
+
+  document.getElementById('fetch-btn').addEventListener('click', fetchBriefing);
+
+  const urgencyClass = {
+    'Breaking': 'urgency-breaking', 'Developing': 'urgency-developing',
+    'Watch': 'urgency-watch', 'Context': 'urgency-context'
+  };
+
+  function safeUrl(url) {
+    if (!url) return null;
+    try { new URL(url); return url; } catch(e) { return null; }
+  }
+
+  function renderCard(story, index, isIndia) {
+    const card = document.createElement('div');
+    card.className = 'story-card' + (isIndia ? ' india-card' : '');
+    const uc = urgencyClass[story.urgency] || 'urgency-context';
+    const url = safeUrl(story.url);
+    const headlineHtml = url
+      ? `<a href="${url}" target="_blank" rel="noopener">${story.headline}</a>`
+      : story.headline;
+    const sourceHtml = story.source
+      ? (url ? `via <a href="${url}" target="_blank" rel="noopener">${story.source}</a>` : `via ${story.source}`)
+      : '';
+    card.innerHTML = `
+      <div class="story-header">
+        ${!isIndia ? `<span class="story-num">${index + 1}</span>` : ''}
+        <span class="story-headline">${headlineHtml}</span>
+      </div>
+      <div class="story-meta${isIndia ? ' india-meta' : ''}">
+        <span class="story-region">${story.region}</span>
+        <span class="story-urgency ${uc}">● ${story.urgency}</span>
+        ${sourceHtml ? `<span class="story-source">${sourceHtml}</span>` : ''}
+      </div>
+      <div class="story-body${isIndia ? ' india-body' : ''}">${story.summary}</div>
+      <div class="story-impact${isIndia ? ' india-impact' : ''}">U.S. policy lens: ${story.usImpact}</div>
+    `;
+    return card;
+  }
+
+  async function fetchBriefing() {
+    const apiKey = getKey();
+    if (!apiKey) { showKeyScreen(); return; }
+
+    const btn = document.getElementById('fetch-btn');
+    const loading = document.getElementById('loading');
+    const storiesWrap = document.getElementById('stories-wrap');
+    const storiesList = document.getElementById('stories-list');
+    const storiesLabel = document.getElementById('stories-label');
+    const indiaSection = document.getElementById('india-section');
+    const indiaList = document.getElementById('india-list');
+    const errorMsg = document.getElementById('error-msg');
+    const briefSummary = document.getElementById('brief-summary');
+
+    btn.disabled = true;
+    loading.classList.add('visible');
+    storiesWrap.classList.remove('visible');
+    errorMsg.classList.remove('visible');
+    errorMsg.textContent = '';
+    storiesList.innerHTML = '';
+    indiaList.innerHTML = '';
+    indiaSection.style.display = 'none';
+    briefSummary.textContent = '';
+
+    const regionFilter = selectedRegion === 'Global' ? 'worldwide' : `focused on ${selectedRegion}`;
+    const todayStr = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+    const systemPrompt = `You are a senior foreign policy analyst. Use web search to find today's most consequential news for U.S. foreign policy. Return ONLY a valid JSON object — no markdown, no backticks, no preamble, no text before or after the JSON.
+
+Preferred general sources: New York Times, Washington Post, Foreign Policy, Foreign Affairs, The Economist, Al Jazeera, BBC, Reuters, Associated Press, The Guardian, Deutsche Welle, France 24.
+Preferred official sources: U.S. State Department, White House, Pentagon, UN press releases, foreign government press offices.
+Preferred India sources: Times of India, The Hindu, Siasat Daily (plus any of the above for India coverage).
+
+Always include a real, working URL to the source article in the "url" field.`;
+
+    const userPrompt = `Today is ${todayStr}. Search for current news and return a JSON object with exactly three keys:
+
+"summary": a 2-3 sentence paragraph summarizing the most important foreign policy themes today. Senior analyst voice — concise and direct.
+
+"indiaStories": array of 1-2 stories about the U.S.-India bilateral relationship today. Return [] if nothing significant.
+
+"globalStories": array of 5 stories ${regionFilter} with major U.S. foreign policy implications. Do not repeat indiaStories.
+
+Each story object must have:
+- "headline": string (max 12 words)
+- "region": string (e.g. "South Asia", "Middle East", "Europe", "Global")
+- "urgency": exactly one of "Breaking", "Developing", "Watch", "Context"
+- "source": string (specific outlet name)
+- "url": string (direct URL to the source article)
+- "summary": string (2-3 factual, analytical sentences)
+- "usImpact": string (1 sentence on U.S. foreign policy implication)
+
+Return only the JSON object. No other text.`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5-20250929',
+          max_tokens: 2000,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }]
+        })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        const msg = errData.error?.message || response.statusText;
+        if (response.status === 401) throw new Error('Invalid API key. Tap "Change API key" below to update it.');
+        throw new Error(`API error (${response.status}): ${msg}`);
+      }
+
+      const data = await response.json();
+      const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      console.log('Raw API response:', text);
+
+      let result;
+      const strategies = [
+        t => JSON.parse(t.trim()),
+        t => JSON.parse(t.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()),
+        t => { const m = t.match(/\{[\s\S]*\}/); if (m) return JSON.parse(m[0]); throw new Error(); }
+      ];
+      for (const fn of strategies) {
+        if (result) break;
+        try { result = fn(text); } catch(e) {}
+      }
+
+      if (!result) {
+        console.error('Parse failed. Raw:', text);
+        throw new Error('Could not parse the response — please try again.');
+      }
+
+      loading.classList.remove('visible');
+
+      if (result.summary) briefSummary.textContent = result.summary;
+
+      if (result.indiaStories && result.indiaStories.length > 0) {
+        result.indiaStories.forEach((s, i) => indiaList.appendChild(renderCard(s, i, true)));
+        indiaSection.style.display = 'block';
+      }
+
+      storiesLabel.textContent = selectedRegion === 'Global' ? 'Top global stories' : `Top stories — ${selectedRegion}`;
+      (result.globalStories || []).forEach((s, i) => storiesList.appendChild(renderCard(s, i, false)));
+
+      storiesWrap.classList.add('visible');
+      btn.textContent = 'Refresh briefing ↗';
+
+    } catch(err) {
+      loading.classList.remove('visible');
+      errorMsg.textContent = err.message;
+      errorMsg.classList.add('visible');
+    }
+
+    btn.disabled = false;
+  }
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed:', err));
+  }
+</script>
+</body>
+</html>
